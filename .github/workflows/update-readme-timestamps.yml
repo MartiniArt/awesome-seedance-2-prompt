@@ -1,0 +1,40 @@
+name: Update README Timestamps
+
+on:
+  schedule:
+    - cron: '0 */12 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-readmes:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Update timestamps
+        run: |
+          chmod +x scripts/update_last_updated.sh
+          scripts/update_last_updated.sh
+
+      - name: Commit and push
+        run: |
+          if git diff --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          git add README*.md
+          git commit -m "chore: update README timestamps"
+          git push
